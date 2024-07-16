@@ -1,0 +1,88 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Constants
+g = 9.81  # acceleration due to gravity (m/s^2)
+rho = 1.225  # air density (kg/m^3)
+Cd = 0.47  # drag coefficient for a sphere
+A = 0.00414  # cross-sectional area of the baseball (m^2)
+m = 0.145  # mass of the baseball (kg)
+
+# Function to calculate air resistance force
+def air_resistance(v):
+    return -0.5 * rho * Cd * A * v * np.abs(v)
+
+# Function to simulate baseball trajectory
+def simulate_baseball(v0, theta):
+    # Convert angle to radians
+    theta_rad = np.deg2rad(theta)
+    
+    # Initial velocity components
+    vx0 = v0 * np.cos(theta_rad)
+    vy0 = v0 * np.sin(theta_rad)
+    
+    # Initial conditions
+    x = [0]
+    y = [0]
+    vx = [vx0]
+    vy = [vy0]
+    t = 0
+    dt = 0.01
+    
+    while y[-1] >= 0:
+        # Calculate total velocity magnitude
+        v_total = np.sqrt(vx[-1]**2 + vy[-1]**2)
+        
+        # Calculate acceleration components including air resistance
+        ax = air_resistance(vx[-1]) / m
+        ay = -g + (air_resistance(vy[-1]) / m)
+        
+        # Update velocity components
+        vx_new = vx[-1] + ax * dt
+        vy_new = vy[-1] + ay * dt
+        
+        # Update position components
+        x_new = x[-1] + vx[-1] * dt
+        y_new = y[-1] + vy[-1] * dt
+        
+        # Append new values to lists
+        vx.append(vx_new)
+        vy.append(vy_new)
+        x.append(x_new)
+        y.append(y_new)
+        
+        # Update time
+        t += dt
+    
+    return x, y
+
+# Function to plot the trajectory
+def plot_trajectory(x, y, v0, theta):
+    plt.figure(figsize=(10, 6))
+    plt.plot(x, y, label=f'Initial Velocity = {v0} m/s, Launch Angle = {theta} degrees')
+    plt.title('Baseball Trajectory Simulation')
+    plt.xlabel('Horizontal Distance (m)')
+    plt.ylabel('Vertical Distance (m)')
+    plt.legend()
+    plt.grid(True)
+    plt.ylim(bottom=0)
+    plt.xlim(left=0)
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
+
+# Interactive simulation
+print("Welcome to the Baseball Trajectory Simulation!")
+print("Enter the initial velocity (m/s) and launch angle (degrees) to see the trajectory.")
+
+while True:
+    try:
+        v0 = float(input("Enter initial velocity (m/s): "))
+        theta = float(input("Enter launch angle (degrees): "))
+        x, y = simulate_baseball(v0, theta)
+        plot_trajectory(x, y, v0, theta)
+    except ValueError:
+        print("Invalid input! Please enter a valid number.")
+    except KeyboardInterrupt:
+        print("\nSimulation ended.")
+        break
+
